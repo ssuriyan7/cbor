@@ -762,28 +762,35 @@ func (d *decoder) parseToValue(v reflect.Value, tInfo *typeInfo) error { //nolin
 			// Use value type
 			v = v.Elem()
 			tInfo = getTypeInfo(v.Type())
-		} else {
-			// Create and use registered type if CBOR data is registered tag
-			if d.dm.tags != nil && d.nextCBORType() == cborTypeTag {
+			// } else {
+			// TODO (tinygo): Type.AssignableTo() for interface isn't fully implemented in tinygo, and
+			// it is called in Type.Implements().
+			// The commented out code is called when decoding CBOR tag to Go interface type.
+			// If CBOR tag is registered with Go type, value of registered type is created.
+			// With this block commented out, decoding CBOR tag to Go interface type returns UnmarshalError.
+			/*
+				// Create and use registered type if CBOR data is registered tag
+				if d.dm.tags != nil && d.nextCBORType() == cborTypeTag {
 
-				off := d.off
-				var tagNums []uint64
-				for d.nextCBORType() == cborTypeTag {
-					_, _, tagNum := d.getHead()
-					tagNums = append(tagNums, tagNum)
-				}
-				d.off = off
+					off := d.off
+					var tagNums []uint64
+					for d.nextCBORType() == cborTypeTag {
+						_, _, tagNum := d.getHead()
+						tagNums = append(tagNums, tagNum)
+					}
+					d.off = off
 
-				registeredType := d.dm.tags.getTypeFromTagNum(tagNums)
-				if registeredType != nil {
-					if registeredType.Implements(tInfo.nonPtrType) ||
-						reflect.PtrTo(registeredType).Implements(tInfo.nonPtrType) {
-						v.Set(reflect.New(registeredType))
-						v = v.Elem()
-						tInfo = getTypeInfo(registeredType)
+					registeredType := d.dm.tags.getTypeFromTagNum(tagNums)
+					if registeredType != nil {
+						if registeredType.Implements(tInfo.nonPtrType) ||
+							reflect.PtrTo(registeredType).Implements(tInfo.nonPtrType) {
+							v.Set(reflect.New(registeredType))
+							v = v.Elem()
+							tInfo = getTypeInfo(registeredType)
+						}
 					}
 				}
-			}
+			*/
 		}
 	}
 
